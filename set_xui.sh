@@ -99,8 +99,7 @@ if {"$XUI_PORT" != ""} {
 		timeout {interact}
 	}
 	send "$XUI_PORT\r"
-}
-else {
+} else {
 	send "n\r"
 }
 
