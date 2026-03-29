@@ -32,22 +32,25 @@ if [ -z "$SERVER_IP" ]; then
 	SERVER_IP=$(curl https://ifconfig.me)
 fi
 
-systemctl stop ssh.socket
-systemctl disable ssh.socket
-
 cp /etc/ssh/sshd_config /etc/ssh/sshd_config~
-if [ -z "$SSH_PORT" ]; then
+if [ -n "$SSH_PORT" ]; then
 	set_sshd_option "Port" "$SSH_PORT"
 fi
 
-if [ -z "$SSH_TCP_FORWARDING" ]; then
+if [ -n "$SSH_TCP_FORWARDING" ]; then
 	if [ "$SSH_TCP_FORWARDING" -eq 1 ]; then
 		set_sshd_option "AllowTcpForwarding" "yes"
 	else
 		set_sshd_option "AllowTcpForwarding" "no"
 	fi	
 fi
-systemctl reload ssh
+
+if [ -n "$(cat /etc/os-release | grep "Ubuntu 24.04")" ]; then
+	systemctl daemon-reload
+	systemctl restart ssh.socket
+else
+	systemctl reload ssh
+fi
 
 cd "$XUI_DIR"
 wget $XUI_URL
