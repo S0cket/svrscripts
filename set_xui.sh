@@ -32,11 +32,12 @@ if [ -z "$SERVER_IP" ]; then
 	SERVER_IP=$(curl https://ifconfig.me)
 fi
 
-cp /etc/ssh/sshd_config /etc/ssh/sshd_config~
+if [ ! -f "/etc/ssh/sshd_config" ]; then
+	cp /etc/ssh/sshd_config /etc/ssh/sshd_config~
+fi
 if [ -n "$SSH_PORT" ]; then
 	set_sshd_option "Port" "$SSH_PORT"
 fi
-
 if [ -n "$SSH_TCP_FORWARDING" ]; then
 	if [ "$SSH_TCP_FORWARDING" -eq 1 ]; then
 		set_sshd_option "AllowTcpForwarding" "yes"
