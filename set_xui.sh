@@ -32,7 +32,7 @@ if [ -z "$SERVER_IP" ]; then
 	SERVER_IP=$(curl https://ifconfig.me)
 fi
 
-if [ ! -f "/etc/ssh/sshd_config" ]; then
+if [ ! -f "/etc/ssh/sshd_config~" ]; then
 	cp /etc/ssh/sshd_config /etc/ssh/sshd_config~
 fi
 if [ -n "$SSH_PORT" ]; then
