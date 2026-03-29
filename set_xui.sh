@@ -75,6 +75,13 @@ chmod a+x x-ui.sh
 
 
 DATA=$(expect <<'EOF'
+
+set XUI_PORT $env(XUI_PORT)
+set SERVER_IP $env(SERVER_IP)
+set XUI_HOME $env(XUI_HOME)
+set XUI_USER $env(XUI_USER)
+set XUI_PASSWORD $env(XUI_PASSWORD)
+
 spawn ./x-ui.sh
 
 set timeout 10
