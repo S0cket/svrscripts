@@ -73,14 +73,9 @@ openssl req -x509 -newkey rsa:2048 -sha256 -days 365 -nodes \
 cd "$XUI_HOME"
 chmod a+x x-ui.sh
 
+apt-get update && apt-get install expect
 
-DATA=$(expect <<'EOF'
-
-set XUI_PORT $env(XUI_PORT)
-set SERVER_IP $env(SERVER_IP)
-set XUI_HOME $env(XUI_HOME)
-set XUI_USER $env(XUI_USER)
-set XUI_PASSWORD $env(XUI_PASSWORD)
+DATA=$(expect <<EOF
 
 spawn ./x-ui.sh
 
