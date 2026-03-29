@@ -46,7 +46,7 @@ systemctl reload ssh
 
 cd "$XUI_DIR"
 wget $XUI_URL
-arc_file="${$XUI_URL##/}"
+arc_file="${$XUI_URL##*/}"
 case "$arc_file" in
 	*.tar.gz) tar -xpzf "$arc_file" ;;
 	*.tar.xz) tar -xpJf "$arc_file" ;;
