@@ -1,8 +1,8 @@
 #!/bin/bash
 
 SERVER_IP=
-SSH_PORT=
-SSH_TCP_FORWARDING=0
+SSH_PORT=12348
+SSH_TCP_FORWARDING=
 UFW=0
 
 XUI_PATH=
@@ -36,11 +36,16 @@ systemctl stop ssh.socket
 systemctl disable ssh.socket
 
 cp /etc/ssh/sshd_config /etc/ssh/sshd_config~
-set_sshd_option "Port" "${SSH_PORT}"
-if [ "$SSH_TCP_FORWARDING" -eq 1 ]; then
-	set_sshd_option "AllowTcpForwarding" "yes"
-else
-	set_sshd_option "AllowTcpForwarding" "no"
+if [ -z "$SSH_PORT" ]; then
+	set_sshd_option "Port" "$SSH_PORT"
+fi
+
+if [ -z "$SSH_TCP_FORWARDING" ]; then
+	if [ "$SSH_TCP_FORWARDING" -eq 1 ]; then
+		set_sshd_option "AllowTcpForwarding" "yes"
+	else
+		set_sshd_option "AllowTcpForwarding" "no"
+	fi	
 fi
 systemctl reload ssh
 
@@ -63,5 +68,7 @@ openssl req -x509 -newkey rsa:2048 -sha256 -days 365 -nodes \
   -addext "subjectAltName=DNS:localhost,IP:127.0.0.1,IP:$SERVER_IP"
 cd "$XUI_HOME"
 chmod a+x x-ui.sh
+
+
 
 cd "$OLD_PWD"
