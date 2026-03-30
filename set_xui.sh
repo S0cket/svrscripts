@@ -268,7 +268,8 @@ echo "_USER_INFO = $_USER_INFO"
 
 echo "GET SERVER INFO"
 
-_SERVER_INFO=$(expect <<EOF
+_SERVER_INFO=$(
+_XUI_INFO_CMD="$_XUI_INFO_CMD" expect <<'EOF'
 log_user 0
 spawn ./x-ui.sh
 set timeout 10
@@ -280,7 +281,7 @@ expect {
 	-re {enter.*selection} {}
 	timeout {exit 9}
 }
-send "$_XUI_INFO_CMD\r"
+send "$env(_XUI_INFO_CMD)\r"
 expect {
 	-re {port:[[:space:]]+([0-9]+)} {
 		set port $expect_out(1,string)
