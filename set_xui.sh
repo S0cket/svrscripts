@@ -194,13 +194,11 @@ expect {
 send "$_XUI_EXIT_CMD\r"
 EOF
 
-echo "GET USER INFO"
-
 _USER_INFO=$(
 _XUI_RESET_USER_CMD="$_XUI_RESET_USER_CMD"
+_XUI_EXIT_CMD="$_XUI_EXIT_CMD"
 XUI_USER="$XUI_USER"
 XUI_PASSWORD="$XUI_PASSWORD"
-_XUI_EXIT_CMD="$_XUI_EXIT_CMD"
 
 expect <<EOF
 log_user 0
@@ -306,9 +304,9 @@ EOF
 )
 
 echo
-echo _SERVER_INFO
+echo "$_SERVER_INFO"
 echo
-echo _USER_INFO
+echo "$_USER_INFO"
 echo
 
 
@@ -316,6 +314,9 @@ _SSH_PORT=$(awk '/^[[:space:]]*Port[[:space:]]+[0-9]+/ {print $2}' /etc/ssh/sshd
 if [ -z "$_SSH_PORT" ]; then
 	_SSH_PORT=22
 fi
+
+_XUI_PORT=$(echo "$_SERVER_INFO" | awk '/^port[[:space:]]+[0-9]+/{print $2}')
+echo "$_XUI_PORT"
 
 if [ "$UFW_ENABLE" -eq 1 ]; then
 	apt-get install -y ufw
