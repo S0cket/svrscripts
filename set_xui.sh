@@ -229,18 +229,17 @@ expect {
 send "y\r"
 
 expect {
-	-re {^.*username.*:[[:space:]]+([^[:space:]]+).*$} {
+	-re {Panel login username has been reset to:[[:space:]]+([^[:space:]]+)} {
 		set user $expect_out(1,string)
 		exp_continue
 	}
-	-re {.*password.*:[[:space:]]+([^[:space:]]+)} {
+	-re {Panel login password has been reset to:[[:space:]]+([^[:space:]]+)} {
 		set password $expect_out(1,string)
 		exp_continue
 	}
-	-re {restart.*xray} {}
+	-re {restart.*xray} {send "y\r"}
 	timeout {exit 6}
 }
-send "y\r"
 
 expect {
 	-re {return.*main.*menu} {}
