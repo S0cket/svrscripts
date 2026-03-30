@@ -264,7 +264,7 @@ puts "password $password"
 EOF
 )
 
-echo $_USER_INFO
+echo "_USER_INFO = $_USER_INFO"
 
 echo "GET SERVER INFO"
 
@@ -302,7 +302,7 @@ puts "path $path"
 EOF
 )
 
-echo $_SERVER_INFO
+echo "_SERVER_INFO = $_SERVER_INFO"
 
 
 _SSH_PORT=$(awk '/^[[:space:]]*Port[[:space:]]+[0-9]+/ {print $2}' /etc/ssh/sshd_config)
