@@ -293,18 +293,12 @@ puts "path $path"
 EOF
 )
 
-echo
-echo "$_SERVER_INFO"
-echo
-echo "$_USER_INFO"
-echo
 
-
-_XUI_URL=$(echo "$_SERVER_INFO" | awk '/^url[[:space:]]+[^[:space:]]+/{print $2}')
+_XUI_URL=$(echo "$_SERVER_INFO" | awk '/^url[[:space:]]+[^[:space:]]+/ {print $2}')
 _XUI_USER=$XUI_USER
 _XUI_PASSWORD=$XUI_PASSWORD
-if [ -z "_XUI_USER" ]; then _XUI_USER=$(echo "$_USER_INFO" | awk '/^username[[:space:]]+[^[:space:]]+/{print $2}') fi
-if [ -z "_XUI_PASSWORD" ]; then _XUI_USER=$(echo "$_USER_INFO" | awk '/^password[[:space:]]+[^[:space:]]+/{print $2}') fi
+if [ -z "$_XUI_USER" ]; then _XUI_USER=$(echo "$_USER_INFO" | awk '/^username[[:space:]]+[^[:space:]]+/ {print $2}'); fi
+if [ -z "$_XUI_PASSWORD" ]; then _XUI_PASSWORD=$(echo "$_USER_INFO" | awk '/^password[[:space:]]+[^[:space:]]+/ {print $2}'); fi
 echo
 echo "---------------------------------------------"
 echo "URL: $_XUI_URL"
