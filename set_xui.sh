@@ -192,8 +192,9 @@ EOF
 
 _USER_INFO=$(
 _XUI_RESET_USER_CMD="$_XUI_RESET_USER_CMD" _XUI_EXIT_CMD="$_XUI_EXIT_CMD" XUI_USER="$XUI_USER" XUI_PASSWORD="$XUI_PASSWORD" expect <<'EOF'
-log_user 0
-spawn env TERM=dumb ./x-ui.sh
+exp_internal 1
+log_user 1
+spawn ./x-ui.sh
 set timeout 10
 set user ""
 set password ""
