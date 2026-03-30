@@ -3,18 +3,27 @@
 SERVER_IP=
 SSH_PORT=1234
 SSH_TCP_FORWARDING=1
-UFW=0
+UFW_ENABLE=0
+UFW_OTHER_PORTS=(443) # (443 1234 7777)
 
-XUI_PATH=
-XUI_PORT=1235
-XUI_USER=root
-XUI_PASSWORD=toor001
+XUI_PATH=/root/root/
+XUI_PORT=
+XUI_USER=
+XUI_PASSWORD=
 XUI_URL="https://github.com/MHSanaei/3x-ui/releases/download/v2.8.11/x-ui-linux-amd64.tar.gz"
 
 XUI_DIR="/opt"
 XUI_HOME="$XUI_DIR/x-ui"
 
 #-----------------------------------------
+
+_XUI_INSTALL_CMD=1
+_XUI_SSL_CUSTOM=3
+_XUI_RESET_USER_CMD=6
+_XUI_STOP_CMD=12
+_XUI_START_CMD=11
+_XUI_INFO_CMD=10
+_XUI_EXIT_CMD=0
 
 set_sshd_option() {
 	local key="$1"
@@ -73,9 +82,10 @@ openssl req -x509 -newkey rsa:2048 -sha256 -days 365 -nodes \
 cd "$XUI_HOME"
 chmod a+x x-ui.sh
 
-apt-get update && apt-get install expect
+apt-get update
+apt-get install -y expect
 
-DATA=$(expect <<EOF
+expect <<EOF
 
 spawn ./x-ui.sh
 
@@ -84,7 +94,7 @@ expect {
 	-re {enter.*selection} {}
 	timeout {interact}
 }
-send "1\r"
+send "$_XUI_INSTALL_CMD\r"
 
 set timeout 300
 expect {
@@ -107,7 +117,7 @@ expect {
 	-re {SSL.*Choose} {}
 	timeout {interact}
 }
-send "3\r"
+send "$_XUI_SSL_CUSTOM\r"
 
 expect {
 	-re {certificate.*issued.*for} {}
@@ -137,41 +147,10 @@ expect {
 	-re {enter.*selection} {}
 	timeout {interact}
 }
-send "6\r"
+send "$_XUI_STOP_CMD\r"
 
 expect {
-	-re {sure.*username.*password} {}
-	timeout {interact}
-}
-send "y\r"
-
-expect {
-	-re {username} {}
-	timeout {interact}
-}
-send "$XUI_USER\r"
-
-expect {
-	-re {password} {}
-	timeout {interact}
-}
-send "$XUI_PASSWORD\r"
-
-expect {
-	-re {disable.*two-factor} {}
-	timeout {interact}
-}
-send "y\r"
-
-expect {
-	-re {restart} {}
-	timeout {interact}
-}
-send "y\r"
-
-
-expect {
-	-re {main.*menu} {}
+	-re {return.*main.*menu} {}
 	timeout {interact}
 }
 send "\r"
@@ -180,17 +159,156 @@ expect {
 	-re {enter.*selection} {}
 	timeout {interact}
 }
-send "10\r"
+send "$_XUI_EXIT_CMD\r"
+EOF
+
+if [ -n "$XUI_PATH" ]; then
+	apt-get install -y sqlite3
+	sqlite3 /etc/x-ui/x-ui.db "update settings set value=\"$XUI_PATH\" where key=\"webBasePath\";"
+fi
+
+expect <<EOF
+spawn ./x-ui.sh
+set timeout 10
 
 expect {
-	eof {puts $expect_out(buffer)}
+	-re {enter.*selection} {}
 	timeout {interact}
 }
+send "$_XUI_START_CMD\r"
+
+expect {
+	-re {return.*main.*menu} {}
+	timeout {interact}
+}
+send "\r"
+
+expect {
+	-re {enter.*selection} {}
+	timeout {interact}
+}
+send "$_XUI_EXIT_CMD\r"
+EOF
 
 
+_USER_INFO=$(expect <<EOF
+spawn ./x-ui.sh
+set timeout 10
+set user ""
+set password ""
+
+expect {
+	-re {enter.*selection} {}
+	timeout {exit 1}
+}
+send "$_XUI_RESET_USER_CMD\r"
+
+expect {
+	-re {sure.*username.*password} {}
+	timeout {exit 2}
+}
+send "y\r"
+
+expect {
+	-re {username} {}
+	timeout {exit 3}
+}
+send "$XUI_USER\r"
+
+expect {
+	-re {password} {}
+	timeout {exit 4}
+}
+send "$XUI_PASSWORD\r"
+
+expect {
+	-re {disable.*two-factor} {}
+	timeout {exit 5}
+}
+send "y\r"
+
+expect {
+	-re {username[^:]*:[[:space:]]+([^[:space:]]+)} {
+		set user $expect_out(1,string)
+		exp_continue
+	}
+	-re {password[^:]*:[[:space:]]+([^[:space:]]+)} {
+		set password $expect_out(1,string)
+		exp_continue
+	}
+}
+puts "username $user"
+puts "password $password"
+
+expect {
+	-re {restart.*xray} {}
+	timeout {exit 6}
+}
+send "y\r"
+
+expect {
+	-re {return.*main.*menu} {}
+	timeout {exit 7}
+}
+send "\r"
+
+expect {
+	-re {enter.*selection} {}
+	timeout {exit 8}
+}
+send "$_XUI_EXIT_CMD\r"
 EOF
 )
 
-echo $DATA
+_SERVER_INFO=$(expect <<EOF
+spawn ./x-ui.sh
+set timeout 10
+set port ""
+set path ""
+set url ""
+
+expect {
+	-re {enter.*selection} {}
+	timeout {exit 9}
+}
+send "$_XUI_INFO_CMD\r"
+expect {
+	-re {port:[[:space:]]+([0-9]+)} {
+		set port $expect_out(1,string)
+		exp_continue
+	}
+	-re {webBasePath:[[:space:]]+([^[:space:]]+)} {
+		set path $expect_out(1,string)
+		exp_continue
+	}
+	-re {Access URL:[[:space:]]+([^[:space:]]+)} {
+		set url $expect_out(1,string)
+		exp_continue
+	}
+	eof {}
+}
+puts "url $url"
+puts "port $port"
+puts "path $path"
+EOF
+)
+
+echo $_SERVER_INFO
+echo $_USER_INFO
+
+_SSH_PORT=$(awk '/^[[:space:]]*Port[[:space:]]+[0-9]+/ {print $2}' /etc/ssh/sshd_config)
+if [ -z "$_SSH_PORT" ]; then
+	_SSH_PORT=22
+fi
+
+if [ "$UFW_ENABLE" -eq 1 ]; then
+	apt-get install -y ufw
+	ufw allow _SSH_PORT
+	for port in "${UFW_OTHER_PORTS[@]}"; do
+		ufw allow "$port"
+	done
+
+fi
+
 
 cd "$OLD_PWD"
