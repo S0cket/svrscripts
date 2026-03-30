@@ -229,11 +229,11 @@ expect {
 send "y\r"
 
 expect {
-	-re {username[^:]*:[[:space:]]+([^[:space:]]+)} {
+	-re {username.*:[[:space:]]+([^[:space:]]+)} {
 		set user $expect_out(1,string)
 		exp_continue
 	}
-	-re {password[^:]*:[[:space:]]+([^[:space:]]+)} {
+	-re {password.*:[[:space:]]+([^[:space:]]+)} {
 		set password $expect_out(1,string)
 		exp_continue
 	}
