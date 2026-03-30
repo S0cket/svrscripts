@@ -266,6 +266,8 @@ puts "password $password"
 EOF
 )
 
+echo $_USER_INFO
+
 echo "GET SERVER INFO"
 
 _SERVER_INFO=$(expect <<EOF
@@ -302,7 +304,7 @@ EOF
 )
 
 echo $_SERVER_INFO
-echo $_USER_INFO
+
 
 _SSH_PORT=$(awk '/^[[:space:]]*Port[[:space:]]+[0-9]+/ {print $2}' /etc/ssh/sshd_config)
 if [ -z "$_SSH_PORT" ]; then
