@@ -85,6 +85,8 @@ chmod a+x x-ui.sh
 apt-get update
 apt-get install -y expect
 
+echo "INSTALL X-UI"
+
 expect <<EOF
 
 spawn ./x-ui.sh
@@ -167,6 +169,8 @@ if [ -n "$XUI_PATH" ]; then
 	sqlite3 /etc/x-ui/x-ui.db "update settings set value=\"$XUI_PATH\" where key=\"webBasePath\";"
 fi
 
+echo "START X-UI"
+
 expect <<EOF
 spawn ./x-ui.sh
 set timeout 10
@@ -190,6 +194,7 @@ expect {
 send "$_XUI_EXIT_CMD\r"
 EOF
 
+echo "GET USER INFO"
 
 _USER_INFO=$(expect <<EOF
 spawn ./x-ui.sh
@@ -237,8 +242,6 @@ expect {
 		exp_continue
 	}
 }
-puts "username $user"
-puts "password $password"
 
 expect {
 	-re {restart.*xray} {}
@@ -257,8 +260,13 @@ expect {
 	timeout {exit 8}
 }
 send "$_XUI_EXIT_CMD\r"
+
+puts "username $user"
+puts "password $password"
 EOF
 )
+
+echo "GET SERVER INFO"
 
 _SERVER_INFO=$(expect <<EOF
 spawn ./x-ui.sh
