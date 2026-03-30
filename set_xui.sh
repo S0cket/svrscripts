@@ -192,8 +192,7 @@ EOF
 
 _USER_INFO=$(
 _XUI_RESET_USER_CMD="$_XUI_RESET_USER_CMD" _XUI_EXIT_CMD="$_XUI_EXIT_CMD" XUI_USER="$XUI_USER" XUI_PASSWORD="$XUI_PASSWORD" expect <<'EOF'
-exp_internal 1
-log_user 1
+log_user 0
 spawn ./x-ui.sh
 set timeout 10
 set user ""
@@ -230,11 +229,11 @@ expect {
 send "y\r"
 
 expect {
-	-re {Panel login username has been reset to:[[:space:]]+([^[:space:]]+)} {
+	-re {Panel login username has been reset to:[[:space:]][^[:space:]]*[[:space:]]+([^[:space:]]+)} {
 		set user $expect_out(1,string)
 		exp_continue
 	}
-	-re {Panel login password has been reset to:[[:space:]]+([^[:space:]]+)} {
+	-re {Panel login password has been reset to:[[:space:]][^[:space:]]*[[:space:]]+([^[:space:]]+)} {
 		set password $expect_out(1,string)
 		exp_continue
 	}
