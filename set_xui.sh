@@ -197,6 +197,7 @@ EOF
 echo "GET USER INFO"
 
 _USER_INFO=$(expect <<EOF
+log_user 0
 spawn ./x-ui.sh
 set timeout 10
 set user ""
@@ -241,9 +242,6 @@ expect {
 		set password $expect_out(1,string)
 		exp_continue
 	}
-}
-
-expect {
 	-re {restart.*xray} {}
 	timeout {exit 6}
 }
@@ -271,6 +269,7 @@ echo $_USER_INFO
 echo "GET SERVER INFO"
 
 _SERVER_INFO=$(expect <<EOF
+log_user 0
 spawn ./x-ui.sh
 set timeout 10
 set port ""
