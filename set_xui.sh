@@ -7,9 +7,9 @@ UFW_ENABLE=0
 UFW_OTHER_PORTS=(443) # (443 1234 7777)
 
 XUI_PATH=/root/root/
-XUI_PORT=
-XUI_USER=
-XUI_PASSWORD=
+XUI_PORT=1235
+XUI_USER=root
+XUI_PASSWORD=toor001
 XUI_URL="https://github.com/MHSanaei/3x-ui/releases/download/v2.8.11/x-ui-linux-amd64.tar.gz"
 
 XUI_DIR="/opt"
@@ -300,21 +300,36 @@ echo "$_USER_INFO"
 echo
 
 
+_XUI_URL=$(echo "$_SERVER_INFO" | awk '/^url[[:space:]]+[^[:space:]]+/{print $2}')
+_XUI_USER=$XUI_USER
+_XUI_PASSWORD=$XUI_PASSWORD
+if [ -z "_XUI_USER" ]; then _XUI_USER=$(echo "$_USER_INFO" | awk '/^username[[:space:]]+[^[:space:]]+/{print $2}') fi
+if [ -z "_XUI_PASSWORD" ]; then _XUI_USER=$(echo "$_USER_INFO" | awk '/^password[[:space:]]+[^[:space:]]+/{print $2}') fi
+echo
+echo "---------------------------------------------"
+echo "URL: $_XUI_URL"
+echo "Username: $_XUI_USER"
+echo "Password: $_XUI_PASSWORD"
+echo "---------------------------------------------"
+echo
+
+
 _SSH_PORT=$(awk '/^[[:space:]]*Port[[:space:]]+[0-9]+/ {print $2}' /etc/ssh/sshd_config)
 if [ -z "$_SSH_PORT" ]; then
 	_SSH_PORT=22
 fi
 
 _XUI_PORT=$(echo "$_SERVER_INFO" | awk '/^port[[:space:]]+[0-9]+/{print $2}')
-echo "$_XUI_PORT"
 
 if [ "$UFW_ENABLE" -eq 1 ]; then
 	apt-get install -y ufw
-	ufw allow _SSH_PORT
+	ufw default deny incoming
+	ufw allow "_SSH_PORT"
+	ufw allow "_XUI_PORT"
 	for port in "${UFW_OTHER_PORTS[@]}"; do
 		ufw allow "$port"
 	done
-
+	ufw enable
 fi
 
 
