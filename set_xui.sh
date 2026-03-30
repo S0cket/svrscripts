@@ -196,7 +196,13 @@ EOF
 
 echo "GET USER INFO"
 
-_USER_INFO=$(expect <<EOF
+_USER_INFO=$(
+_XUI_RESET_USER_CMD="$_XUI_RESET_USER_CMD"
+XUI_USER="$XUI_USER"
+XUI_PASSWORD="$XUI_PASSWORD"
+_XUI_EXIT_CMD="$_XUI_EXIT_CMD"
+
+expect <<EOF
 log_user 0
 spawn ./x-ui.sh
 set timeout 10
@@ -207,7 +213,7 @@ expect {
 	-re {enter.*selection} {}
 	timeout {exit 1}
 }
-send "$_XUI_RESET_USER_CMD\r"
+send "$env(_XUI_RESET_USER_CMD)\r"
 
 expect {
 	-re {sure.*username.*password} {}
@@ -219,13 +225,13 @@ expect {
 	-re {username} {}
 	timeout {exit 3}
 }
-send "$XUI_USER\r"
+send "$env(XUI_USER)\r"
 
 expect {
 	-re {password} {}
 	timeout {exit 4}
 }
-send "$XUI_PASSWORD\r"
+send "$env(XUI_PASSWORD)\r"
 
 expect {
 	-re {disable.*two-factor} {}
@@ -257,16 +263,12 @@ expect {
 	-re {enter.*selection} {}
 	timeout {exit 8}
 }
-send "$_XUI_EXIT_CMD\r"
+send "$env(_XUI_EXIT_CMD)\r"
 
 puts "username $user"
 puts "password $password"
 EOF
 )
-
-echo "_USER_INFO = $_USER_INFO"
-
-echo "GET SERVER INFO"
 
 _SERVER_INFO=$(
 _XUI_INFO_CMD="$_XUI_INFO_CMD" expect <<'EOF'
@@ -303,7 +305,11 @@ puts "path $path"
 EOF
 )
 
-echo "_SERVER_INFO = $_SERVER_INFO"
+echo
+echo _SERVER_INFO
+echo
+echo _USER_INFO
+echo
 
 
 _SSH_PORT=$(awk '/^[[:space:]]*Port[[:space:]]+[0-9]+/ {print $2}' /etc/ssh/sshd_config)
